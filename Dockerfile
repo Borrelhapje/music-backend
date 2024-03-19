@@ -3,7 +3,7 @@ WORKDIR /app
 COPY go.mod ./
 COPY go.sum ./
 COPY main.go ./
-RUN CGO_ENABLED=1 GOOS=linux go build -o /entrypoint
+RUN CGO_ENABLED=0 GOOS=linux go build -o /entrypoint
 
 FROM scratch
 COPY --from=build /entrypoint /entrypoint

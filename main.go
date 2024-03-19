@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 var dbpath string
@@ -19,7 +19,7 @@ func init() {
 }
 
 func main() {
-	db, err := sql.Open("sqlite3", dbpath)
+	db, err := sql.Open("sqlite", dbpath)
 	if err != nil {
 		log.Fatal(err)
 	}
