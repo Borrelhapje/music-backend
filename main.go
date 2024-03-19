@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"flag"
 	"log"
 	"net/http"
 	"strings"
@@ -11,8 +12,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+var dbpath string
+
+func init() {
+	flag.StringVar(&dbpath, "dbpath", "library.db", "Path to the sqlite database file")
+}
+
 func main() {
-	db, err := sql.Open("sqlite3", "library.db")
+	db, err := sql.Open("sqlite3", dbpath)
 	if err != nil {
 		log.Fatal(err)
 	}
