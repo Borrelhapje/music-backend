@@ -6,6 +6,8 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -15,7 +17,7 @@ import (
 var dbpath string
 
 func init() {
-	flag.StringVar(&dbpath, "dbpath", "library.bla", "Path to the sqlite database file")
+	flag.StringVar(&dbpath, "dbpath", "library.db", "Path to the sqlite database file")
 }
 
 func main() {
@@ -24,8 +26,15 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err = ListItems(db); err != nil {
+	items, err := ListItems(db)
+	if err != nil {
 		log.Fatal(err)
+	}
+	for _, item := range items {
+		path := filepath.Join("/data", item.Path)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			log.Default().Println(item.Path)
+		}
 	}
 	http.Handle("/list", listEndpoint(db))
 	err = http.ListenAndServe(":8080", nil)
