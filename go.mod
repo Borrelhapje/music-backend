@@ -1,6 +1,6 @@
 module github.com/borrelhapje/music-backend
 
-go 1.22.2
+go 1.24.1
 
 require modernc.org/sqlite v1.36.1
 
