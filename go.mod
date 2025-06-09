@@ -2,7 +2,7 @@ module github.com/borrelhapje/music-backend
 
 go 1.24.1
 
-require modernc.org/sqlite v1.37.1
+require modernc.org/sqlite v1.38.0
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
@@ -14,7 +14,7 @@ require (
 	golang.org/x/exp v0.0.0-20250408133849-7e4ce0ab07d0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	modernc.org/gc/v3 v3.0.0-20240107210532-573471604cb6 // indirect
-	modernc.org/libc v1.65.7 // indirect
+	modernc.org/libc v1.65.10 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 	modernc.org/strutil v1.2.1 // indirect
