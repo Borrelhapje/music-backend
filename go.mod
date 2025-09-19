@@ -2,7 +2,7 @@ module github.com/borrelhapje/music-backend
 
 go 1.24.1
 
-require modernc.org/sqlite v1.38.2
+require modernc.org/sqlite v1.39.0
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
