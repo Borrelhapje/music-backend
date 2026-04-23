@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,9 +17,11 @@ import (
 )
 
 var dbpath string
+var basePath string
 
 func init() {
-	flag.StringVar(&dbpath, "dbpath", "library.db", "Path to the sqlite database file")
+	flag.StringVar(&dbpath, "dbpath", "/downloads/complete/complete/music/musiclibrary.db", "Path to the sqlite database file")
+	flag.StringVar(&basePath, "basepath", "/data", "path to storage")
 }
 
 func main() {
@@ -37,6 +41,7 @@ func main() {
 		}
 	}
 	http.Handle("/list", listEndpoint(db))
+	http.Handle("/list/videos", videosEndpoint())
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
 		log.Fatal(err)
@@ -87,4 +92,77 @@ func ListItems(db *sql.DB) ([]Song, error) {
 		items = append(items, song)
 	}
 	return items, nil
+}
+
+func videosEndpoint() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		items, err := ListVideos(basePath)
+		if err != nil {
+			log.Default().Println(err)
+			w.WriteHeader(500)
+			return
+		}
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(200)
+		encoder := json.NewEncoder(w)
+		encoder.Encode(items)
+	}
+}
+
+type Video struct {
+	Name      string
+	Season    int
+	Episode   int
+	Link      string
+	Subtitles string
+}
+
+func ListVideos(basePath string) ([]*Video, error) {
+	result := []*Video{}
+	filepath.WalkDir(basePath, func(path string, d os.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+		for _, suffix := range []string{".mp4", ".mkv", ".avi"} {
+			if strings.HasSuffix(path, suffix) {
+				result = append(result, &Video{Name: path})
+			}
+		}
+		return nil
+	})
+	for _, vid := range result {
+		FillMetadata(vid, basePath)
+	}
+	return result, nil
+}
+
+var seasonRegex = regexp.MustCompile(`(.+)(\W+(\d\d\d\d))?\W+[Ss](\d\d+)[Ee](\d\d+)`)
+var replaces = regexp.MustCompile(`\W+`)
+
+func FillMetadata(video *Video, basepath string) error {
+	video.Link = video.Name[len(basepath):]
+	paths := strings.Split(video.Name, "/")
+	foundMatch := false
+	for i := range paths {
+		matches := seasonRegex.FindStringSubmatch(paths[len(paths)-1-i])
+		if matches != nil {
+			foundMatch = true
+			season, err := strconv.Atoi(matches[4])
+			if err != nil {
+				return err
+			}
+			episode, err := strconv.Atoi(matches[5])
+			if err != nil {
+				return err
+			}
+			video.Season = season
+			video.Episode = episode
+			video.Name = replaces.ReplaceAllString(strings.ToLower(matches[1]), " ")
+			break
+		}
+	}
+	if !foundMatch {
+		video.Name = paths[len(paths)-1]
+	}
+	return nil
 }
